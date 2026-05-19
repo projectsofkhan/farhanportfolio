@@ -1,72 +1,61 @@
 // Wait for everything to load
-(function() {
+window.addEventListener('load', () => {
     
-    // ========== PRELOADER SYSTEM ==========
-    const preloader = document.getElementById('preloader');
-    const mainContent = document.getElementById('main-content');
-    const progressLine = document.querySelector('.progress-line');
-    const loadingPercent = document.querySelector('.loading-percent');
+    // ========== INITIALIZATION SCREEN (1.5s) ==========
+    const initScreen = document.getElementById('initScreen');
+    const mainContent = document.getElementById('mainContent');
+    const progressBar = document.querySelector('.init-progress-bar');
     
-    let progress = 0;
-    const preloaderDuration = 1500; // 1.5 seconds
-    const intervalTime = 15;
-    const steps = preloaderDuration / intervalTime;
-    const increment = 100 / steps;
+    if (progressBar) {
+        // Animate progress bar to 100% over 1.5s
+        setTimeout(() => {
+            progressBar.style.width = '100%';
+        }, 100);
+    }
     
-    // Animate progress bar
-    const progressInterval = setInterval(() => {
-        progress += increment;
-        if (progress >= 100) {
-            progress = 100;
-            clearInterval(progressInterval);
-            
-            // Fade out preloader
+    // Hide init screen after 1.5s and show main content
+    setTimeout(() => {
+        if (initScreen) {
+            initScreen.classList.add('fade-out');
             setTimeout(() => {
-                preloader.style.opacity = '0';
-                setTimeout(() => {
-                    preloader.style.display = 'none';
-                    mainContent.style.display = 'block';
-                    
-                    // Trigger entrance animations
-                    document.body.classList.add('loaded');
-                    initializePortfolio();
-                }, 500);
-            }, 100);
+                initScreen.style.display = 'none';
+                if (mainContent) {
+                    mainContent.classList.remove('hidden');
+                    setTimeout(() => {
+                        mainContent.classList.add('visible');
+                    }, 50);
+                }
+                // Trigger all animations after content is visible
+                initializeAllAnimations();
+            }, 500);
         }
-        
-        if (progressLine) {
-            progressLine.style.width = progress + '%';
-        }
-        if (loadingPercent) {
-            loadingPercent.textContent = Math.floor(progress) + '%';
-        }
-    }, intervalTime);
+    }, 1500);
     
-    // ========== PORTFOLIO INITIALIZATION (After Preloader) ==========
-    function initializePortfolio() {
+    // ========== INITIALIZE ALL ANIMATIONS ==========
+    function initializeAllAnimations() {
         
         // Scroll Progress Bar
-        const progressBar = document.querySelector('.progress-bar');
-        if (progressBar) {
+        const progressBarScroll = document.querySelector('.progress-bar');
+        if (progressBarScroll) {
             window.addEventListener('scroll', () => {
                 const scrollTop = window.pageYOffset;
                 const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
-                const progressPercent = (scrollTop / scrollHeight) * 100;
-                progressBar.style.width = progressPercent + '%';
+                const progress = (scrollTop / scrollHeight) * 100;
+                progressBarScroll.style.width = progress + '%';
             });
         }
         
-        // Animated Numbers Counter
+        // Animated Numbers Counter (Stats)
         const statNumbers = document.querySelectorAll('.stat-number');
         
         const animateNumbers = () => {
             statNumbers.forEach(stat => {
                 const target = parseInt(stat.getAttribute('data-target'));
                 let current = 0;
-                const incrementValue = target / 40;
+                const increment = target / 50;
                 const updateNumber = () => {
                     if (current < target) {
-                        current += incrementValue;
+                        current += increment;
                         stat.innerText = Math.ceil(current);
                         requestAnimationFrame(updateNumber);
                     } else {
@@ -77,19 +66,18 @@
             });
         };
         
-        // Intersection Observer for stats
-        const observerOptions = { threshold: 0.3 };
-        const observer = new IntersectionObserver((entries) => {
+        // Trigger number animation when stats are in view
+        const statsObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
                     animateNumbers();
-                    observer.unobserve(entry.target);
+                    statsObserver.unobserve(entry.target);
                 }
             });
-        }, observerOptions);
+        }, { threshold: 0.5 });
         
         const heroStats = document.querySelector('.hero-stats');
-        if (heroStats) observer.observe(heroStats);
+        if (heroStats) statsObserver.observe(heroStats);
         
         // Animate skill bars
         const skillBars = document.querySelectorAll('.skill-bar');
@@ -106,7 +94,6 @@
         };
         
         // Trigger skill animation on scroll
-        const skillsSection = document.querySelector('#skills');
         const skillsObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
@@ -114,52 +101,107 @@
                     skillsObserver.unobserve(entry.target);
                 }
             });
-        }, { threshold: 0.2 });
+        }, { threshold: 0.3 });
         
+        const skillsSection = document.querySelector('#skills');
         if (skillsSection) skillsObserver.observe(skillsSection);
         
-        // GSAP Scroll Animations (Lightweight)
-        if (typeof gsap !== 'undefined') {
-            gsap.registerPlugin(ScrollTrigger);
-            
-            // Fade-up animations for glass cards
-            const cards = document.querySelectorAll('.glass-card');
-            cards.forEach(card => {
-                gsap.from(card, {
-                    scrollTrigger: {
-                        trigger: card,
-                        start: 'top 90%',
-                        toggleActions: 'play none none reverse'
-                    },
-                    opacity: 0,
-                    y: 30,
-                    duration: 0.5,
-                    ease: 'power1.out'
-                });
+        // GSAP Scroll Animations
+        gsap.registerPlugin(ScrollTrigger);
+        
+        // Fade-up animations for all cards
+        gsap.utils.toArray('.glass-card').forEach(card => {
+            gsap.from(card, {
+                scrollTrigger: {
+                    trigger: card,
+                    start: 'top 90%',
+                    toggleActions: 'play none none reverse'
+                },
+                opacity: 0,
+                y: 40,
+                duration: 0.6,
+                ease: 'power2.out'
             });
-        }
+        });
+        
+        // Animate section headers
+        gsap.utils.toArray('.section-header').forEach(header => {
+            gsap.from(header, {
+                scrollTrigger: {
+                    trigger: header,
+                    start: 'top 85%',
+                    toggleActions: 'play none none reverse'
+                },
+                opacity: 0,
+                x: -30,
+                duration: 0.5
+            });
+        });
+        
+        // Hero title animation
+        gsap.from('.hero-title', {
+            duration: 0.8,
+            y: 50,
+            opacity: 0,
+            ease: 'power3.out'
+        });
+        
+        gsap.from('.hero-badge', {
+            duration: 0.6,
+            scale: 0,
+            opacity: 0,
+            delay: 0.2,
+            ease: 'back.out(1.2)'
+        });
+        
+        gsap.from('.hero-info', {
+            duration: 0.6,
+            y: 30,
+            opacity: 0,
+            delay: 0.4
+        });
+        
+        gsap.from('.hero-stats', {
+            duration: 0.6,
+            scale: 0.9,
+            opacity: 0,
+            delay: 0.6
+        });
+        
+        gsap.from('.hero-cta', {
+            duration: 0.6,
+            y: 30,
+            opacity: 0,
+            delay: 0.8
+        });
         
         // Smooth scroll for buttons
         const exploreBtn = document.getElementById('exploreBtn');
-        const contactBtn = document.getElementById('contactBtn');
-        
         if (exploreBtn) {
             exploreBtn.addEventListener('click', () => {
-                const aboutSection = document.querySelector('#about');
-                if (aboutSection) {
-                    aboutSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
+                document.querySelector('#about').scrollIntoView({ behavior: 'smooth', block: 'start' });
             });
         }
         
+        const contactBtn = document.getElementById('contactBtn');
         if (contactBtn) {
             contactBtn.addEventListener('click', () => {
-                const contactSection = document.querySelector('#contact');
-                if (contactSection) {
-                    contactSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
+                document.querySelector('#contact').scrollIntoView({ behavior: 'smooth', block: 'start' });
             });
         }
+        
+        // Footer navigation smooth scroll
+        const footerLinks = document.querySelectorAll('.footer-links a');
+        footerLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetId = link.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
         
         // Copy email functionality
         const copyButtons = document.querySelectorAll('.btn-copy');
@@ -167,75 +209,110 @@
             btn.addEventListener('click', () => {
                 const email = btn.getAttribute('data-email');
                 if (email) {
-                    navigator.clipboard.writeText(email);
-                    const originalHTML = btn.innerHTML;
-                    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> Copied!';
-                    setTimeout(() => {
-                        btn.innerHTML = originalHTML;
-                    }, 2000);
+                    navigator.clipboard.writeText(email).then(() => {
+                        const originalHTML = btn.innerHTML;
+                        btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> Copied!';
+                        setTimeout(() => {
+                            btn.innerHTML = originalHTML;
+                        }, 2000);
+                    });
                 }
             });
         });
         
-        // Project buttons (temporary alert)
+        // Project buttons - show project info
         const projectBtns = document.querySelectorAll('.btn-project');
+        const projectDetails = {
+            'sec-framework': 'Security Analysis Framework: Comprehensive tool with automated CVE correlation, risk scoring (CVSS v3), and executive reporting. Built with Python, Django, and PostgreSQL.',
+            'net-lab': 'Network Hardening Lab: Virtual environment with pfSense firewall, Snort IDS, VLAN segmentation, and ELK stack for SIEM. Successfully mitigated DDoS and lateral movement attacks.',
+            'threat-dash': 'Threat Intelligence Dashboard: Real-time aggregation from 15+ OSINT feeds (AlienVault, VirusTotal, etc.) with interactive graphs and email alerts.',
+            'pentest-suite': 'Automated Pentesting Suite: 25+ scripts for recon (subdomain enumeration, port scanning), vulnerability scanning, and post-exploitation reporting.',
+            'malware-sandbox': 'Malware Analysis Sandbox: Cuckoo-based environment with behavior monitoring, network traffic analysis, and YARA rule matching.',
+            'waf': 'Web Application Firewall: Custom ModSecurity WAF with OWASP CRS, SQLi/XSS prevention, rate limiting, and real-time blocking capabilities.'
+        };
+        
         projectBtns.forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.preventDefault();
-                const projectCard = btn.closest('.project-card');
-                const projectName = projectCard?.querySelector('h3')?.innerText || 'this project';
-                alert(`📁 "${projectName}" - Full details available. Contact me for the complete case study!`);
+                e.stopPropagation();
+                const projectKey = btn.getAttribute('data-project');
+                if (projectKey && projectDetails[projectKey]) {
+                    alert(`📁 Project Details:\n\n${projectDetails[projectKey]}\n\nContact me for full source code and case study.`);
+                } else {
+                    alert(`✨ Full project details available upon request. Please contact me for more information!`);
+                }
             });
         });
         
-        // Lightweight parallax for orbs
-        const orbs = document.querySelectorAll('.gradient-orb');
-        if (orbs.length) {
-            window.addEventListener('mousemove', (e) => {
-                const mouseX = e.clientX / window.innerWidth;
-                const mouseY = e.clientY / window.innerHeight;
-                orbs.forEach((orb, index) => {
-                    const speed = 15 + index * 8;
-                    const x = (mouseX - 0.5) * speed;
-                    const y = (mouseY - 0.5) * speed;
-                    orb.style.transform = `translate(${x}px, ${y}px) scale(1)`;
-                });
+        // Parallax effect for gradient orbs
+        window.addEventListener('mousemove', (e) => {
+            const mouseX = e.clientX / window.innerWidth;
+            const mouseY = e.clientY / window.innerHeight;
+            
+            const orbs = document.querySelectorAll('.gradient-orb');
+            orbs.forEach((orb, index) => {
+                const speed = 20 + index * 10;
+                const x = (mouseX - 0.5) * speed;
+                const y = (mouseY - 0.5) * speed;
+                orb.style.transform = `translate(${x}px, ${y}px) scale(1)`;
             });
-        }
+        });
         
-        // Hover effect for project cards (lightweight)
+        // Hover tilt effect for project cards (lightweight)
         const projectCards = document.querySelectorAll('.project-card');
         projectCards.forEach(card => {
-            card.addEventListener('mouseenter', () => {
-                card.style.transform = 'translateY(-5px)';
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                const rotateX = (y - centerY) / 30;
+                const rotateY = (centerX - x) / 30;
+                card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-5px)`;
             });
+            
             card.addEventListener('mouseleave', () => {
-                card.style.transform = 'translateY(0px)';
+                card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0px)';
             });
         });
         
-        // Update footer year
-        const footer = document.querySelector('footer p');
-        if (footer) {
-            const year = new Date().getFullYear();
-            footer.innerHTML = `© ${year} Farhan Khan | Securing the digital frontier`;
-        }
+        // Timeline item hover effect
+        const timelineItems = document.querySelectorAll('.timeline-item');
+        timelineItems.forEach(item => {
+            item.addEventListener('mouseenter', () => {
+                gsap.to(item, {
+                    x: 10,
+                    duration: 0.3,
+                    ease: 'power2.out'
+                });
+            });
+            item.addEventListener('mouseleave', () => {
+                gsap.to(item, {
+                    x: 0,
+                    duration: 0.3
+                });
+            });
+        });
         
         // Console greeting
-        console.log('%c🚀 Farhan Khan Portfolio | Fully Loaded', 'color: #00e5ff; font-size: 14px; font-weight: bold;');
-        console.log('%c⚡ Optimized | Preloader | Responsive Design', 'color: #8b9bae; font-size: 12px;');
-    }
-    
-    // Fallback: If something goes wrong, show content after 2 seconds
-    setTimeout(() => {
-        if (preloader && preloader.style.display !== 'none') {
-            preloader.style.opacity = '0';
-            setTimeout(() => {
-                preloader.style.display = 'none';
-                if (mainContent) mainContent.style.display = 'block';
-                initializePortfolio();
-            }, 500);
+        console.log('%c🚀 Farhan Khan | Cybersecurity Portfolio', 'color: #00e5ff; font-size: 18px; font-weight: bold; font-family: monospace;');
+        console.log('%c⚡ Fully Loaded | 1.5s Init Screen | Responsive Design', 'color: #8b9bae; font-size: 12px;');
+        console.log('%c📧 Contact: t06235015@gmail.com', 'color: #00e5ff; font-size: 12px;');
+        
+        // Dynamic year in footer
+        const footerYear = document.querySelector('.footer-content p');
+        if (footerYear) {
+            const year = new Date().getFullYear();
+            footerYear.innerHTML = `© ${year} Farhan Khan | Securing the digital frontier, one vulnerability at a time.`;
         }
-    }, 2000);
-    
-})();
+        
+        // Add loading complete class to body
+        document.body.classList.add('loaded');
+    }
+});
+
+// Preload images and resources
+window.addEventListener('beforeunload', () => {
+    // Cleanup if needed
+});
