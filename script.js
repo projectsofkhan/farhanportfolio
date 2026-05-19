@@ -1,192 +1,300 @@
-// FULL TERMINAL EMULATION + MATRIX + GSAP + UNLOCK SYSTEM
-(function() {
-    // ---------- MATRIX RAIN ----------
-    const canvas = document.getElementById('matrixCanvas');
-    const ctx = canvas.getContext('2d');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    const chars = "01アイウエオカキクケコABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()";
-    const fontSize = 16;
-    let columns = canvas.width / fontSize;
-    let drops = [];
-    for(let i = 0; i < columns; i++) drops[i] = 1;
-
-    function drawMatrix() {
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = '#0f0';
-        ctx.font = `${fontSize}px monospace`;
-        for(let i = 0; i < drops.length; i++) {
-            const text = chars[Math.floor(Math.random() * chars.length)];
-            ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-            if(drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
-            drops[i]++;
+// Wait for DOM to load
+document.addEventListener('DOMContentLoaded', () => {
+    
+    // Scroll Progress Bar
+    const progressBar = document.querySelector('.progress-bar');
+    window.addEventListener('scroll', () => {
+        const scrollTop = window.pageYOffset;
+        const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const progress = (scrollTop / scrollHeight) * 100;
+        progressBar.style.width = progress + '%';
+    });
+    
+    // Animated Numbers Counter
+    const statNumbers = document.querySelectorAll('.stat-number');
+    const animateNumbers = () => {
+        statNumbers.forEach(stat => {
+            const target = parseInt(stat.getAttribute('data-target'));
+            let current = 0;
+            const increment = target / 50;
+            const updateNumber = () => {
+                if(current < target) {
+                    current += increment;
+                    stat.innerText = Math.ceil(current);
+                    requestAnimationFrame(updateNumber);
+                } else {
+                    stat.innerText = target;
+                }
+            };
+            updateNumber();
+        });
+    };
+    
+    // Trigger number animation when in viewport
+    const observerOptions = { threshold: 0.5 };
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if(entry.isIntersecting) {
+                animateNumbers();
+                observer.unobserve(entry.target);
+            }
+        });
+    }, observerOptions);
+    
+    const heroStats = document.querySelector('.hero-stats');
+    if(heroStats) observer.observe(heroStats);
+    
+    // Animate skill bars when scrolled into view
+    const skillBars = document.querySelectorAll('.skill-bar');
+    const animateSkills = () => {
+        skillBars.forEach(bar => {
+            const width = bar.getAttribute('data-width');
+            if(width && !bar.style.animationPlayed) {
+                bar.style.animationPlayed = 'true';
+                bar.style.setProperty('--skill-width', width + '%');
+                const pseudo = window.getComputedStyle(bar, '::after');
+                // Direct inline style animation
+                setTimeout(() => {
+                    bar.classList.add('animate');
+                }, 100);
+            }
+        });
+    };
+    
+    // Add CSS for skill bar animation
+    const style = document.createElement('style');
+    style.textContent = `
+        .skill-bar.animate::after {
+            width: var(--skill-width, 0%) !important;
         }
-    }
-    setInterval(drawMatrix, 50);
-    window.addEventListener('resize', () => {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        columns = canvas.width / fontSize;
-        drops = [];
-        for(let i = 0; i < columns; i++) drops[i] = 1;
+        .skill-bar::after {
+            transition: width 1.2s cubic-bezier(0.22, 0.97, 0.36, 1);
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // Set custom properties for each skill bar
+    skillBars.forEach(bar => {
+        const width = bar.getAttribute('data-width');
+        if(width) {
+            bar.style.setProperty('--skill-width', width + '%');
+        }
     });
-
-    // ---------- CUSTOM CURSOR ----------
-    const cursor = document.querySelector('.cursor');
-    const follower = document.querySelector('.cursor-follower');
-    document.addEventListener('mousemove', (e) => {
-        cursor.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
-        follower.style.transform = `translate(${e.clientX - 20}px, ${e.clientY - 20}px)`;
-    });
-
-    // ---------- PARTICLES GENERATOR ----------
-    const particlesContainer = document.getElementById('particles');
-    for(let i = 0; i < 60; i++) {
-        const particle = document.createElement('div');
-        particle.classList.add('particle');
-        particle.style.left = Math.random() * 100 + '%';
-        particle.style.width = particle.style.height = Math.random() * 4 + 2 + 'px';
-        particle.style.animationDelay = Math.random() * 10 + 's';
-        particle.style.animationDuration = Math.random() * 8 + 5 + 's';
-        particlesContainer.appendChild(particle);
-    }
-
-    // ---------- TYPED.JS HERO ----------
-    new Typed('#typed-output', {
-        strings: ['whoami', 'cat about.txt', 'ls -la', 'sudo cyber_skills', 'echo "Hello World!"'],
-        typeSpeed: 60,
-        backSpeed: 40,
-        loop: true,
-        showCursor: false,
-        onComplete: (self) => { self.cursor = false; }
-    });
-
-    // ---------- GSAP SCROLL ANIMATIONS ----------
+    
+    // Trigger skill animation on scroll
+    const skillsSection = document.querySelector('#skills');
+    const skillsObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if(entry.isIntersecting) {
+                skillBars.forEach(bar => bar.classList.add('animate'));
+                skillsObserver.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.3 });
+    
+    if(skillsSection) skillsObserver.observe(skillsSection);
+    
+    // GSAP Scroll Animations
     gsap.registerPlugin(ScrollTrigger);
+    
+    // Fade-up animations for all glass cards
     gsap.utils.toArray('.glass-card').forEach(card => {
         gsap.from(card, {
             scrollTrigger: {
                 trigger: card,
-                start: 'top 80%',
+                start: 'top 85%',
                 toggleActions: 'play none none reverse'
             },
             opacity: 0,
-            y: 60,
-            duration: 0.8,
-            ease: 'power3.out'
+            y: 50,
+            duration: 0.6,
+            ease: 'power2.out'
         });
     });
-
-    // ---------- RADIAL PROGRESS SKILLS (Canvas drawing) ----------
-    function drawRadial(canvasElem, percent) {
-        const ctx = canvasElem.getContext('2d');
-        const centerX = 60, centerY = 60, radius = 50;
-        let startAngle = -0.5 * Math.PI;
-        let endAngle = startAngle + (percent / 100) * 2 * Math.PI;
-        ctx.clearRect(0, 0, 120, 120);
-        ctx.beginPath();
-        ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
-        ctx.strokeStyle = '#1e2a3a';
-        ctx.lineWidth = 8;
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.arc(centerX, centerY, radius, startAngle, endAngle);
-        ctx.strokeStyle = '#00e5ff';
-        ctx.lineWidth = 8;
-        ctx.stroke();
-    }
-    document.querySelectorAll('.radial-progress canvas').forEach(canvas => {
-        const parent = canvas.closest('.radial-progress');
-        const percent = parseInt(parent.getAttribute('data-progress') || 85);
-        drawRadial(canvas, percent);
-    });
-
-    // ---------- PROJECT FILTERS ----------
-    const filterBtns = document.querySelectorAll('.filter-btn');
-    const projects = document.querySelectorAll('.project-tile');
-    filterBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const filter = btn.getAttribute('data-filter');
-            filterBtns.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            projects.forEach(proj => {
-                if(filter === 'all' || proj.getAttribute('data-category') === filter) {
-                    proj.style.display = 'block';
-                    gsap.from(proj, { scale: 0.8, opacity: 0, duration: 0.4 });
-                } else {
-                    proj.style.display = 'none';
-                }
-            });
+    
+    // Animate section headers
+    gsap.utils.toArray('.section-header').forEach(header => {
+        gsap.from(header, {
+            scrollTrigger: {
+                trigger: header,
+                start: 'top 90%',
+                toggleActions: 'play none none reverse'
+            },
+            opacity: 0,
+            x: -30,
+            duration: 0.5
         });
     });
-
-    // ---------- MODAL SYSTEM ----------
-    const modal = document.getElementById('projectModal');
-    const modalBody = document.getElementById('modalBody');
-    document.querySelectorAll('.modal-trigger').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const projectId = btn.getAttribute('data-project');
-            if(projectId === 'project1') {
-                modalBody.innerHTML = `<h2>Security Analysis Framework</h2><p>Detailed vulnerability assessment suite with automated CVE correlation, risk scoring (CVSS), and executive reporting.</p><p><strong>Technologies:</strong> Python, OWASP ZAP, NIST framework, PostgreSQL.</p><p>Impact: Reduced false positives by 40% in test environments.</p>`;
-            } else {
-                modalBody.innerHTML = `<h2>Network Hardening Lab</h2><p>Virtualized corporate network with segmented VLANs, Snort IDS, pfSense firewall, and SIEM logging (ELK stack).</p><p>Attack simulation: Prevented DDoS and lateral movement attacks during red team exercises.</p>`;
+    
+    // Navbar active state on scroll
+    const sections = document.querySelectorAll('.section');
+    const navItems = document.querySelectorAll('.nav-item');
+    
+    window.addEventListener('scroll', () => {
+        let current = '';
+        sections.forEach(section => {
+            const sectionTop = section.offsetTop;
+            const sectionHeight = section.clientHeight;
+            if(scrollY >= sectionTop - 200) {
+                current = section.getAttribute('id');
             }
-            modal.style.display = 'block';
+        });
+        
+        navItems.forEach(item => {
+            item.classList.remove('active');
+            if(item.getAttribute('href') === `#${current}`) {
+                item.classList.add('active');
+            }
         });
     });
-    document.querySelector('.close-modal').addEventListener('click', () => modal.style.display = 'none');
-    window.addEventListener('click', (e) => { if(e.target === modal) modal.style.display = 'none'; });
-
-    // ---------- TIMELINE UNLOCK LOGIC (simulate progress) ----------
-    let completedProjects = 1; // start with 1 done, after 2 projects unlocked timeline
-    function updateTimelineUnlock() {
-        const lockedItems = document.querySelectorAll('.timeline-item.locked');
-        if(completedProjects >= 2) {
-            lockedItems.forEach(item => {
-                item.classList.remove('locked');
-                item.classList.add('unlocked');
-                gsap.to(item, { opacity: 1, filter: 'blur(0px)', duration: 0.5 });
-                item.querySelector('.timeline-status').innerHTML = '✅ Unlocked';
-            });
-            document.querySelector('.unlock-hint').innerHTML = '🎉 All milestones unlocked! Great progress!';
-        }
+    
+    // Smooth scroll for navigation
+    navItems.forEach(item => {
+        item.addEventListener('click', (e) => {
+            e.preventDefault();
+            const targetId = item.getAttribute('href');
+            const targetElement = document.querySelector(targetId);
+            if(targetElement) {
+                targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+    });
+    
+    // Explore button scroll
+    const exploreBtn = document.getElementById('exploreBtn');
+    if(exploreBtn) {
+        exploreBtn.addEventListener('click', () => {
+            document.querySelector('#about').scrollIntoView({ behavior: 'smooth' });
+        });
     }
-    // Simulate unlocking when projects are clicked? Add event on project tiles to increment counter
-    document.querySelectorAll('.project-tile').forEach(tile => {
-        tile.addEventListener('click', () => {
-            if(completedProjects < 2) completedProjects++;
-            updateTimelineUnlock();
+    
+    // Contact button scroll
+    const contactBtn = document.getElementById('contactBtn');
+    if(contactBtn) {
+        contactBtn.addEventListener('click', () => {
+            document.querySelector('#contact').scrollIntoView({ behavior: 'smooth' });
+        });
+    }
+    
+    // Copy email functionality
+    const copyButtons = document.querySelectorAll('.btn-copy');
+    copyButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const email = btn.getAttribute('data-email');
+            if(email) {
+                navigator.clipboard.writeText(email);
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> Copied!';
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                }, 2000);
+            }
         });
     });
-    updateTimelineUnlock();
-
-    // ---------- UPTIME COUNTER ----------
-    let startTime = Date.now();
-    setInterval(() => {
-        const elapsed = Math.floor((Date.now() - startTime) / 1000);
-        const days = Math.floor(elapsed / 86400);
-        const hours = Math.floor((elapsed % 86400) / 3600);
-        const mins = Math.floor((elapsed % 3600) / 60);
-        document.getElementById('uptime').innerText = `${days}d ${hours}h ${mins}m`;
-        let skillsCount = document.querySelectorAll('.skill-card').length;
-        document.getElementById('skillsLoaded').innerText = skillsCount;
-    }, 1000);
-
-    // ---------- COPY EMAIL ----------
-    document.getElementById('copyEmailBtn')?.addEventListener('click', () => {
-        navigator.clipboard.writeText('t06235015@gmail.com');
-        alert('📧 Email copied to clipboard!');
-    });
-
-    // ---------- AOS INIT ----------
-    AOS.init({ duration: 1000, once: false, mirror: true });
-
-    // ---------- GLITCH HOVER EFFECT ON NAVIGATION CMDS ----------
-    document.querySelectorAll('.nav-cmd').forEach(cmd => {
-        cmd.addEventListener('mouseenter', () => {
-            gsap.to(cmd, { x: 5, duration: 0.1, yoyo: true, repeat: 3 });
+    
+    // Project buttons alert (temporary)
+    const projectBtns = document.querySelectorAll('.btn-project');
+    projectBtns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const projectName = btn.closest('.project-card')?.querySelector('h3')?.innerText || 'this project';
+            alert(`✨ "${projectName}" - Full case study available upon request. Contact me for details!`);
         });
     });
-})();
+    
+    // Parallax effect for gradient orbs
+    window.addEventListener('mousemove', (e) => {
+        const mouseX = e.clientX / window.innerWidth;
+        const mouseY = e.clientY / window.innerHeight;
+        
+        const orbs = document.querySelectorAll('.gradient-orb');
+        orbs.forEach((orb, index) => {
+            const speed = 20 + index * 10;
+            const x = (mouseX - 0.5) * speed;
+            const y = (mouseY - 0.5) * speed;
+            orb.style.transform = `translate(${x}px, ${y}px) scale(1)`;
+        });
+    });
+    
+    // Hover effect for project cards
+    const projectCards = document.querySelectorAll('.project-card');
+    projectCards.forEach(card => {
+        card.addEventListener('mousemove', (e) => {
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            const rotateX = (y - centerY) / 20;
+            const rotateY = (centerX - x) / 20;
+            card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-8px)`;
+        });
+        
+        card.addEventListener('mouseleave', () => {
+            card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0px)';
+        });
+    });
+    
+    // Add floating animation to stat numbers on hover
+    const stats = document.querySelectorAll('.stat');
+    stats.forEach(stat => {
+        stat.addEventListener('mouseenter', () => {
+            gsap.to(stat.querySelector('.stat-number'), {
+                scale: 1.2,
+                duration: 0.3,
+                yoyo: true,
+                repeat: 1
+            });
+        });
+    });
+    
+    // Timeline item hover effect
+    const timelineItems = document.querySelectorAll('.timeline-item');
+    timelineItems.forEach(item => {
+        item.addEventListener('mouseenter', () => {
+            gsap.to(item, {
+                x: 10,
+                duration: 0.3,
+                ease: 'power2.out'
+            });
+        });
+        item.addEventListener('mouseleave', () => {
+            gsap.to(item, {
+                x: 0,
+                duration: 0.3
+            });
+        });
+    });
+    
+    // Console greeting
+    console.log('%c🚀 Farhan Khan Portfolio | Cybersecurity Student', 'color: #00e5ff; font-size: 16px; font-weight: bold;');
+    console.log('%c⚡ Interactive portfolio loaded | 3D Cards | Scroll Animations', 'color: #8b9bae; font-size: 12px;');
+    
+    // Dynamic year in footer
+    const footer = document.querySelector('footer p');
+    if(footer) {
+        const year = new Date().getFullYear();
+        footer.innerHTML = `© ${year} Farhan Khan | Securing the digital frontier`;
+    }
+    
+    // Initialize AOS-like behavior with GSAP for remaining elements
+    const animateOnScroll = () => {
+        const elements = document.querySelectorAll('.skill-card, .about-card, .contact-card, .project-card');
+        elements.forEach((el, index) => {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if(entry.isIntersecting) {
+                        gsap.fromTo(el, 
+                            { opacity: 0, y: 30, scale: 0.95 },
+                            { opacity: 1, y: 0, scale: 1, duration: 0.5, delay: index * 0.1 }
+                        );
+                        observer.unobserve(el);
+                    }
+                });
+            }, { threshold: 0.2 });
+            observer.observe(el);
+        });
+    };
+    
+    animateOnScroll();
+});
