@@ -84,68 +84,22 @@
     .video-wrapper {
       width: 100%;
       display: flex;
-      flex-direction: column;
-      align-items: center;
+      justify-content: center;
       margin: 0.5rem 0 0.2rem;
-    }
-
-    .video-frame {
-      position: relative;
-      width: 100%;
-      max-width: 560px;
       border-radius: 20px;
       overflow: hidden;
-      background: #000;
+      transition: opacity 0.2s;
     }
 
     /* keep iframe responsive without breaking layout */
-    .video-frame iframe {
-      display: block;
+    .video-wrapper iframe {
+      max-width: 100%;
       width: 100%;
       height: auto;
       aspect-ratio: 560 / 365;  /* maintain original proportions */
       border: none;
       overflow: hidden;
-    }
-
-    /* Fullscreen button – simple, clean, subtle */
-    .fullscreen-btn {
-      margin-top: 1rem;
-      background: #f2f2f2;
-      border: none;
-      border-radius: 60px;
-      padding: 0.7rem 1.8rem;
-      font-size: 0.95rem;
-      font-weight: 500;
-      color: #1e1e1e;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      transition: background 0.15s ease, transform 0.1s ease;
-      font-family: inherit;
-      letter-spacing: 0.2px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
-    }
-
-    .fullscreen-btn:hover {
-      background: #e8e8e8;
-    }
-
-    .fullscreen-btn:active {
-      transform: scale(0.98);
-    }
-
-    /* small svg icon inside button */
-    .fullscreen-btn svg {
-      width: 18px;
-      height: 18px;
-      fill: none;
-      stroke: currentColor;
-      stroke-width: 2;
-      stroke-linecap: round;
-      stroke-linejoin: round;
+      display: block;
     }
 
     /* small extra touch – subtle footer-like line, but very short */
@@ -174,11 +128,6 @@
         font-size: 0.85rem;
         padding: 0.3rem 0.9rem;
       }
-
-      .fullscreen-btn {
-        padding: 0.6rem 1.4rem;
-        font-size: 0.9rem;
-      }
     }
   </style>
 </head>
@@ -195,74 +144,23 @@
       <span>strong</span>
     </div>
 
-    <!-- facebook reel embed + fullscreen button -->
+    <!-- facebook reel embed – fullscreen already enabled via allowfullscreen -->
     <div class="video-wrapper">
-      <div class="video-frame" id="videoContainer">
-        <iframe 
-          id="facebookVideo"
-          src="https://www.facebook.com/plugins/video.php?height=250&href=https%3A%2F%2Fwww.facebook.com%2Freel%2F1639478437151515%2F&show_text=true&width=560&t=0" 
-          width="560" 
-          height="365" 
-          style="border:none;overflow:hidden" 
-          scrolling="no" 
-          frameborder="0" 
-          allowfullscreen="true" 
-          allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" 
-          allowFullScreen="true">
-        </iframe>
-      </div>
-      <button class="fullscreen-btn" id="fullscreenBtn" aria-label="Enter fullscreen">
-        <svg viewBox="0 0 24 24">
-          <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
-        </svg>
-        Full Screen
-      </button>
+      <iframe 
+        src="https://www.facebook.com/plugins/video.php?height=250&href=https%3A%2F%2Fwww.facebook.com%2Freel%2F1639478437151515%2F&show_text=true&width=560&t=0" 
+        width="560" 
+        height="365" 
+        style="border:none;overflow:hidden" 
+        scrolling="no" 
+        frameborder="0" 
+        allowfullscreen="true" 
+        allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" 
+        allowFullScreen="true">
+      </iframe>
     </div>
 
     <!-- tiny extra, still ultra simple -->
     <div class="simple-foot">for khan family</div>
   </div>
-
-  <script>
-    (function() {
-      const fullscreenBtn = document.getElementById('fullscreenBtn');
-      const videoContainer = document.getElementById('videoContainer');
-
-      fullscreenBtn.addEventListener('click', function() {
-        if (!document.fullscreenElement) {
-          // enter fullscreen on the video container
-          if (videoContainer.requestFullscreen) {
-            videoContainer.requestFullscreen();
-          } else if (videoContainer.webkitRequestFullscreen) { /* Safari */
-            videoContainer.webkitRequestFullscreen();
-          } else if (videoContainer.msRequestFullscreen) { /* IE11 */
-            videoContainer.msRequestFullscreen();
-          }
-        } else {
-          // exit fullscreen
-          if (document.exitFullscreen) {
-            document.exitFullscreen();
-          } else if (document.webkitExitFullscreen) {
-            document.webkitExitFullscreen();
-          } else if (document.msExitFullscreen) {
-            document.msExitFullscreen();
-          }
-        }
-      });
-
-      // optional: update button text / icon when fullscreen changes (nice touch)
-      document.addEventListener('fullscreenchange', updateButtonState);
-      document.addEventListener('webkitfullscreenchange', updateButtonState);
-      document.addEventListener('MSFullscreenChange', updateButtonState);
-
-      function updateButtonState() {
-        const isFullscreen = !!document.fullscreenElement;
-        // subtle toggle – we keep the same design but can change label if wanted
-        // (keep it simple, no text change to preserve minimalism)
-        // but we could optionally change aria-label for accessibility
-        fullscreenBtn.setAttribute('aria-label', isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen');
-      }
-    })();
-  </script>
 </body>
 </html>
