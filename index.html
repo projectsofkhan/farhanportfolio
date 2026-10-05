@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Attack on Titan · Khan Family</title>
+  <title>Full Screen Video</title>
   <style>
     /* ultra minimal, smooth, simple */
     * {
@@ -31,7 +31,7 @@
       width: 100%;
       background: #ffffff;
       border-radius: 36px;
-      padding: 2.5rem 1.8rem 2.8rem;
+      padding: 2.5rem 1.8rem 2.5rem;
       box-shadow: 0 12px 28px rgba(0, 0, 0, 0.03), 0 4px 12px rgba(0, 0, 0, 0.02);
       transition: box-shadow 0.2s ease;
       display: flex;
@@ -40,127 +40,211 @@
       text-align: center;
     }
 
-    /* huge ATTACK ON TITAN text – clean, bold, no fuss */
-    .huge-title {
-      font-size: clamp(3.2rem, 16vw, 6.5rem);
-      font-weight: 800;
-      letter-spacing: -0.02em;
-      line-height: 0.95;
-      text-transform: uppercase;
-      color: #0b0b0b;
-      margin-bottom: 0.5rem;
-      word-break: break-word;
-      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    }
-
-    /* very short khan family texts – small, subtle, smooth spacing */
-    .khan-note {
-      margin: 1rem 0 1.8rem;
-      font-size: 1.2rem;
-      font-weight: 400;
-      color: #3c3c3c;
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 0.6rem 1.6rem;
-      letter-spacing: 0.2px;
-    }
-
-    .khan-note span {
-      background: #f2f2f2;
-      padding: 0.4rem 1rem;
-      border-radius: 100px;
-      font-size: 0.95rem;
-      color: #2a2a2a;
-      white-space: nowrap;
-      transition: background 0.15s ease;
-    }
-
-    .khan-note span:hover {
-      background: #e8e8e8;
-    }
-
-    /* iframe container – no extra decoration, just clean frame */
+    /* iframe container – clean, rounded */
     .video-wrapper {
       width: 100%;
       display: flex;
-      justify-content: center;
-      margin: 0.5rem 0 0.2rem;
+      flex-direction: column;
+      align-items: center;
+      margin: 0;
+    }
+
+    .video-frame {
+      position: relative;
+      width: 100%;
+      max-width: 560px;
       border-radius: 20px;
       overflow: hidden;
-      transition: opacity 0.2s;
+      background: #000;
     }
 
     /* keep iframe responsive without breaking layout */
-    .video-wrapper iframe {
-      max-width: 100%;
+    .video-frame iframe {
+      display: block;
       width: 100%;
       height: auto;
       aspect-ratio: 560 / 365;  /* maintain original proportions */
       border: none;
       overflow: hidden;
-      display: block;
     }
 
-    /* small extra touch – subtle footer-like line, but very short */
-    .simple-foot {
-      margin-top: 2rem;
-      font-size: 0.8rem;
-      color: #b0b0b0;
-      letter-spacing: 0.3px;
-      font-weight: 400;
-      text-transform: lowercase;
+    /* Fullscreen button – simple, clean, subtle */
+    .fullscreen-btn {
+      margin-top: 1.4rem;
+      background: #f2f2f2;
+      border: none;
+      border-radius: 60px;
+      padding: 0.7rem 1.8rem;
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: #1e1e1e;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: background 0.15s ease, transform 0.1s ease;
+      font-family: inherit;
+      letter-spacing: 0.2px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+    }
+
+    .fullscreen-btn:hover {
+      background: #e8e8e8;
+    }
+
+    .fullscreen-btn:active {
+      transform: scale(0.98);
+    }
+
+    /* small svg icon inside button */
+    .fullscreen-btn svg {
+      width: 18px;
+      height: 18px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
     }
 
     /* fine adjustments for small screens */
     @media (max-width: 500px) {
       .card {
-        padding: 2rem 1.2rem 2.2rem;
+        padding: 2rem 1.2rem 2rem;
         border-radius: 28px;
       }
 
-      .khan-note {
-        font-size: 1rem;
-        gap: 0.5rem 1rem;
-      }
-
-      .khan-note span {
-        font-size: 0.85rem;
-        padding: 0.3rem 0.9rem;
+      .fullscreen-btn {
+        padding: 0.6rem 1.4rem;
+        font-size: 0.9rem;
       }
     }
   </style>
 </head>
 <body>
   <div class="card">
-    <!-- huge text – exactly as requested -->
-    <h1 class="huge-title">Attack On Titan</h1>
-
-    <!-- very short texts for khan family -->
-    <div class="khan-note">
-      <span>khan family</span>
-      <span>always</span>
-      <span>together</span>
-      <span>strong</span>
-    </div>
-
-    <!-- facebook reel embed – fullscreen already enabled via allowfullscreen -->
+    <!-- facebook reel embed + fullscreen button -->
     <div class="video-wrapper">
-      <iframe 
-        src="https://www.facebook.com/plugins/video.php?height=250&href=https%3A%2F%2Fwww.facebook.com%2Freel%2F1639478437151515%2F&show_text=true&width=560&t=0" 
-        width="560" 
-        height="365" 
-        style="border:none;overflow:hidden" 
-        scrolling="no" 
-        frameborder="0" 
-        allowfullscreen="true" 
-        allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" 
-        allowFullScreen="true">
-      </iframe>
+      <div class="video-frame" id="videoContainer">
+        <iframe 
+          id="facebookVideo"
+          src="https://www.facebook.com/plugins/video.php?height=250&href=https%3A%2F%2Fwww.facebook.com%2Freel%2F1639478437151515%2F&show_text=true&width=560&t=0" 
+          width="560" 
+          height="365" 
+          style="border:none;overflow:hidden" 
+          scrolling="no" 
+          frameborder="0" 
+          allowfullscreen="true" 
+          allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" 
+          allowFullScreen="true">
+        </iframe>
+      </div>
+      <button class="fullscreen-btn" id="fullscreenBtn" aria-label="Enter fullscreen">
+        <svg viewBox="0 0 24 24">
+          <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
+        </svg>
+        Full Screen
+      </button>
     </div>
-
-    <!-- tiny extra, still ultra simple -->
-    <div class="simple-foot">for khan family</div>
   </div>
+
+  <script>
+    (function() {
+      const fullscreenBtn = document.getElementById('fullscreenBtn');
+      const videoContainer = document.getElementById('videoContainer');
+
+      fullscreenBtn.addEventListener('click', function() {
+        if (!document.fullscreenElement) {
+          // enter fullscreen on the video container
+          if (videoContainer.requestFullscreen) {
+            videoContainer.requestFullscreen();
+          } else if (videoContainer.webkitRequestFullscreen) { /* Safari */
+            videoContainer.webkitRequestFullscreen();
+          } else if (videoContainer.msRequestFullscreen) { /* IE11 */
+            videoContainer.msRequestFullscreen();
+          }
+        } else {
+          // exit fullscreen
+          if (document.exitFullscreen) {
+            document.exitFullscreen();
+          } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
+          } else if (document.msExitFullscreen) {
+            document.msExitFullscreen();
+          }
+        }
+      });
+
+      // update button aria-label when fullscreen changes
+      document.addEventListener('fullscreenchange', updateButtonState);
+      document.addEventListener('webkitfullscreenchange', updateButtonState);
+      document.addEventListener('MSFullscreenChange', updateButtonState);
+
+      function updateButtonState() {
+        const isFullscreen = !!document.fullscreenElement;
+        fullscreenBtn.setAttribute('aria-label', isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen');
+      }
+    })();
+  </script>
+
+  <style>
+    /* make the video container fill the entire screen when in fullscreen mode */
+    .video-frame:fullscreen {
+      max-width: none;
+      width: 100vw;
+      height: 100vh;
+      border-radius: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #000;
+    }
+
+    .video-frame:fullscreen iframe {
+      width: 100vw;
+      height: 100vh;
+      aspect-ratio: auto;
+      max-width: none;
+    }
+
+    /* Safari support */
+    .video-frame:-webkit-full-screen {
+      max-width: none;
+      width: 100vw;
+      height: 100vh;
+      border-radius: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #000;
+    }
+
+    .video-frame:-webkit-full-screen iframe {
+      width: 100vw;
+      height: 100vh;
+      aspect-ratio: auto;
+      max-width: none;
+    }
+
+    /* IE11 support */
+    .video-frame:-ms-fullscreen {
+      max-width: none;
+      width: 100vw;
+      height: 100vh;
+      border-radius: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #000;
+    }
+
+    .video-frame:-ms-fullscreen iframe {
+      width: 100vw;
+      height: 100vh;
+      aspect-ratio: auto;
+      max-width: none;
+    }
+  </style>
 </body>
 </html>
